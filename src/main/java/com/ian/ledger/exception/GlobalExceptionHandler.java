@@ -46,6 +46,17 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()));
   }
 
+  @ExceptionHandler(InsufficientFundsException.class)
+  public ResponseEntity<ErrorResponse> handleInsufficientFunds(
+      InsufficientFundsException ex, HttpServletRequest request) {
+    HttpStatus status = HttpStatus.UNPROCESSABLE_CONTENT;
+
+    return ResponseEntity.status(status)
+        .body(
+            ErrorResponse.of(
+                ErrorCode.INSUFFICIENT_FUNDS, ex.getMessage(), status, request.getRequestURI()));
+  }
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex, HttpServletRequest request) {
     // TODO: ideally add observability integration for team alerts here; new relic or Sentry or
