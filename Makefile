@@ -1,4 +1,4 @@
-.PHONY: help build test lint format
+.PHONY: help build test lint format run
 
 help:
 	@echo "Available targets:"
@@ -6,6 +6,7 @@ help:
 	@echo "  test    - Run unit tests"
 	@echo "  lint    - Run formatting checks"
 	@echo "  format  - Run auto-format"
+	@echo "  run     - Start server"
 
 build:
 	./mvnw package -DskipTests -q
@@ -18,3 +19,6 @@ lint:
 
 format:
 	./mvnw spotless:apply
+
+run:
+	./mvnw spring-boot:run
