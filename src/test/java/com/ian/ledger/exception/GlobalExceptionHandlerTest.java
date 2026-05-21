@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 class GlobalExceptionHandlerTest {
@@ -51,6 +53,47 @@ class GlobalExceptionHandlerTest {
         ErrorCode.INVALID_PARAMETER,
         "Invalid value for parameter 'id': 'not-a-uuid' is not a valid UUID",
         "/ledgers/not-a-uuid/balance");
+  }
+
+  @Test
+  void handleValidation_returns400WithFirstFieldError() {
+    // arrange
+    var target = new com.ian.ledger.dto.CreateEntryRequest(null, null);
+    var bindingResult = new BeanPropertyBindingResult(target, "createEntryRequest");
+    bindingResult.rejectValue("amount", "Positive", "must be greater than 0");
+    var ex = new MethodArgumentNotValidException(null, bindingResult);
+    var request = new MockHttpServletRequest();
+    request.setRequestURI("/ledgers/some-id");
+
+    // act
+    ResponseEntity<ErrorResponse> response = handler.handleValidation(ex, request);
+
+    // assert
+    assertErrorResponse(
+        response,
+        HttpStatus.BAD_REQUEST,
+        ErrorCode.INVALID_PARAMETER,
+        "amount: must be greater than 0",
+        "/ledgers/some-id");
+  }
+
+  @Test
+  void handleInsufficientFunds_returns422() {
+    // arrange
+    var ex = new InsufficientFundsException();
+    var request = new MockHttpServletRequest();
+    request.setRequestURI("/ledgers/some-id");
+
+    // act
+    ResponseEntity<ErrorResponse> response = handler.handleInsufficientFunds(ex, request);
+
+    // assert
+    assertErrorResponse(
+        response,
+        HttpStatus.UNPROCESSABLE_CONTENT,
+        ErrorCode.INSUFFICIENT_FUNDS,
+        "Insufficient funds for this withdrawal",
+        "/ledgers/some-id");
   }
 
   @Test
