@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -23,6 +24,24 @@ public class GlobalExceptionHandler {
         .body(
             ErrorResponse.of(
                 ErrorCode.LEDGER_NOT_FOUND, ex.getMessage(), status, request.getRequestURI()));
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ErrorResponse> handleValidation(
+      MethodArgumentNotValidException ex, HttpServletRequest request) {
+    String message =
+        ex.getBindingResult().getFieldErrors().stream()
+            .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+            .sorted()
+            .findFirst()
+            .orElse("Invalid request");
+    return ResponseEntity.badRequest()
+        .body(
+            ErrorResponse.of(
+                ErrorCode.INVALID_PARAMETER,
+                message,
+                HttpStatus.BAD_REQUEST,
+                request.getRequestURI()));
   }
 
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -44,6 +63,17 @@ public class GlobalExceptionHandler {
                 message,
                 HttpStatus.BAD_REQUEST,
                 request.getRequestURI()));
+  }
+
+  @ExceptionHandler(InsufficientFundsException.class)
+  public ResponseEntity<ErrorResponse> handleInsufficientFunds(
+      InsufficientFundsException ex, HttpServletRequest request) {
+    HttpStatus status = HttpStatus.UNPROCESSABLE_CONTENT;
+
+    return ResponseEntity.status(status)
+        .body(
+            ErrorResponse.of(
+                ErrorCode.INSUFFICIENT_FUNDS, ex.getMessage(), status, request.getRequestURI()));
   }
 
   @ExceptionHandler(Exception.class)

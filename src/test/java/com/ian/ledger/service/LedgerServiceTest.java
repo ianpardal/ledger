@@ -52,8 +52,8 @@ class LedgerServiceTest {
 
     // assert
     assertThat(result.data()).hasSize(1);
-    assertThat(result.data().get(0).id()).isEqualTo(ledger.id());
-    assertThat(result.data().get(0).createdAt()).isEqualTo(ledger.createdAt());
+    assertThat(result.data().getFirst().id()).isEqualTo(ledger.id());
+    assertThat(result.data().getFirst().createdAt()).isEqualTo(ledger.createdAt());
     assertThat(result.page()).isZero();
     assertThat(result.size()).isEqualTo(20);
     assertThat(result.total()).isEqualTo(1);
@@ -70,7 +70,7 @@ class LedgerServiceTest {
     PaginationResponse<LedgerResponse> result = ledgerService.listLedgers(0, 20);
 
     // assert
-    assertThat(result.data().get(0).id()).isEqualTo(newer.id());
+    assertThat(result.data().getFirst().id()).isEqualTo(newer.id());
     assertThat(result.data().get(1).id()).isEqualTo(older.id());
   }
 

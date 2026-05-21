@@ -1,11 +1,12 @@
 package com.ian.ledger.controller;
 
+import com.ian.ledger.dto.BalanceResponse;
+import com.ian.ledger.dto.CreateEntryRequest;
 import com.ian.ledger.dto.LedgerEntryResponse;
 import com.ian.ledger.dto.PaginationResponse;
-import com.ian.ledger.model.EntryType;
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.ArrayList;
+import com.ian.ledger.model.LedgerEntry;
+import com.ian.ledger.service.LedgerEntryService;
+import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +19,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/ledgers/{id}/entries")
+@RequestMapping("/ledgers/{id}")
 public class LedgerEntryController {
+
+  private final LedgerEntryService ledgerEntryService;
+
+  public LedgerEntryController(LedgerEntryService ledgerEntryService) {
+    this.ledgerEntryService = ledgerEntryService;
+  }
 
   /**
    * Records a deposit or withdrawal on a ledger.
@@ -30,10 +37,11 @@ public class LedgerEntryController {
    */
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public LedgerEntryResponse create(@PathVariable UUID id, @RequestBody Object request) {
-    // TODO: add actual implementation with LedgerService
+  public LedgerEntryResponse create(
+      @PathVariable UUID id, @Valid @RequestBody CreateEntryRequest request) {
+    LedgerEntry entry = ledgerEntryService.addEntry(id, request.type(), request.amount());
     return new LedgerEntryResponse(
-        UUID.randomUUID(), EntryType.DEPOSIT, BigDecimal.ZERO, BigDecimal.ZERO, Instant.now());
+        entry.id(), entry.type(), entry.amount(), entry.currentBalance(), entry.createdAt());
   }
 
   /**
@@ -49,12 +57,17 @@ public class LedgerEntryController {
       @PathVariable UUID id,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size) {
-    ArrayList<LedgerEntryResponse> entries = new ArrayList<>();
-    entries.add(
-        new LedgerEntryResponse(
-            UUID.randomUUID(), EntryType.DEPOSIT, BigDecimal.ZERO, BigDecimal.ZERO, Instant.now()));
+    return ledgerEntryService.listEntries(id, page, size);
+  }
 
-    // TODO: add actual implementation with LedgerService
-    return new PaginationResponse<>(entries, page, size, 1);
+  /**
+   * Returns the current balance for the given ledger id.
+   *
+   * @param id the ledger ID
+   * @return the id + balance
+   */
+  @GetMapping("balance")
+  public BalanceResponse getBalance(@PathVariable UUID id) {
+    return new BalanceResponse(id, ledgerEntryService.getBalance(id));
   }
 }
