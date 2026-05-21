@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** REST controller for ledger entry management. */
 @RestController
 @RequestMapping("/ledgers/{id}/entries")
 public class LedgerEntryController {
@@ -34,7 +33,7 @@ public class LedgerEntryController {
   public LedgerEntryResponse create(@PathVariable UUID id, @RequestBody Object request) {
     // TODO: add actual implementation with LedgerService
     return new LedgerEntryResponse(
-        UUID.randomUUID(), EntryType.DEPOSIT, BigDecimal.ZERO, Instant.now());
+        UUID.randomUUID(), EntryType.DEPOSIT, BigDecimal.ZERO, BigDecimal.ZERO, Instant.now());
   }
 
   /**
@@ -53,7 +52,7 @@ public class LedgerEntryController {
     ArrayList<LedgerEntryResponse> entries = new ArrayList<>();
     entries.add(
         new LedgerEntryResponse(
-            UUID.randomUUID(), EntryType.DEPOSIT, BigDecimal.ZERO, Instant.now()));
+            UUID.randomUUID(), EntryType.DEPOSIT, BigDecimal.ZERO, BigDecimal.ZERO, Instant.now()));
 
     // TODO: add actual implementation with LedgerService
     return new PaginationResponse<>(entries, page, size, 1);
