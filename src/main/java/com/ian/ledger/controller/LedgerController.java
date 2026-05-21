@@ -1,17 +1,15 @@
 package com.ian.ledger.controller;
 
-import com.ian.ledger.dto.BalanceResponse;
+import com.ian.ledger.dto.CreateLedgerRequest;
 import com.ian.ledger.dto.LedgerResponse;
 import com.ian.ledger.dto.PaginationResponse;
 import com.ian.ledger.model.Ledger;
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.UUID;
+import com.ian.ledger.service.LedgerService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -22,6 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/ledgers")
 public class LedgerController {
 
+  private final LedgerService ledgerService;
+
+  public LedgerController(LedgerService ledgerService) {
+    this.ledgerService = ledgerService;
+  }
+
   /**
    * Creates a new ledger.
    *
@@ -29,9 +33,9 @@ public class LedgerController {
    */
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public LedgerResponse create() {
-    // TODO: add actual implementation with LedgerService
-    return new LedgerResponse(UUID.randomUUID(), Instant.now());
+  public LedgerResponse create(@Valid @RequestBody CreateLedgerRequest request) {
+    Ledger ledger = ledgerService.createLedger(request.name());
+    return new LedgerResponse(ledger.id(), ledger.name(), ledger.createdAt());
   }
 
   /**
@@ -42,26 +46,8 @@ public class LedgerController {
    * @return paginated list of ledgers
    */
   @GetMapping
-  public PaginationResponse<Ledger> list(
+  public PaginationResponse<LedgerResponse> list(
       @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
-    UUID ledgerId = UUID.randomUUID();
-    ArrayList<Ledger> ledgers = new ArrayList<>();
-    ledgers.add(new Ledger(ledgerId, Instant.now()));
-
-    // TODO: add actual implementation with LedgerService
-    return new PaginationResponse<>(ledgers, page, size, 1);
-  }
-
-  /**
-   * Returns the current balance for a ledger.
-   *
-   * @param id the ledger ID
-   * @return the balance
-   */
-  @GetMapping("/{id}/balance")
-  public BalanceResponse balance(@PathVariable UUID id) {
-
-    // TODO: add actual implementation with LedgerService
-    return new BalanceResponse(id, BigDecimal.ZERO);
+    return ledgerService.listLedgers(page, size);
   }
 }
