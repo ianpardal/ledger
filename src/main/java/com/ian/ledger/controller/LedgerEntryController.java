@@ -1,5 +1,11 @@
 package com.ian.ledger.controller;
 
+import com.ian.ledger.dto.LedgerEntryResponse;
+import com.ian.ledger.dto.PaginationResponse;
+import com.ian.ledger.model.EntryType;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,8 +31,10 @@ public class LedgerEntryController {
    */
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public String create(@PathVariable UUID id, @RequestBody Object request) {
-    return "not implemented";
+  public LedgerEntryResponse create(@PathVariable UUID id, @RequestBody Object request) {
+    // TODO: add actual implementation with LedgerService
+    return new LedgerEntryResponse(
+        UUID.randomUUID(), EntryType.DEPOSIT, BigDecimal.ZERO, Instant.now());
   }
 
   /**
@@ -38,10 +46,16 @@ public class LedgerEntryController {
    * @return paginated list of entries
    */
   @GetMapping
-  public String list(
+  public PaginationResponse<LedgerEntryResponse> list(
       @PathVariable UUID id,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size) {
-    return "not implemented";
+    ArrayList<LedgerEntryResponse> entries = new ArrayList<>();
+    entries.add(
+        new LedgerEntryResponse(
+            UUID.randomUUID(), EntryType.DEPOSIT, BigDecimal.ZERO, Instant.now()));
+
+    // TODO: add actual implementation with LedgerService
+    return new PaginationResponse<>(entries, page, size, 1);
   }
 }

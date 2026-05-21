@@ -2,7 +2,7 @@ package com.ian.ledger.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.UUID;
@@ -39,9 +39,10 @@ class LedgerEntryControllerTest {
 
     // assert
     result.andExpect(status().isCreated());
-    result.andExpect(
-        content()
-            .string("not implemented")); // TODO: add actual expected return when we have models
+    result.andExpect(jsonPath("$.id").isString());
+    result.andExpect(jsonPath("$.type").value("DEPOSIT"));
+    result.andExpect(jsonPath("$.amount").isNumber());
+    result.andExpect(jsonPath("$.createdAt").isString());
   }
 
   @Test
@@ -54,8 +55,13 @@ class LedgerEntryControllerTest {
 
     // assert
     result.andExpect(status().isOk());
-    result.andExpect(
-        content()
-            .string("not implemented")); // TODO: add actual expected return when we have models
+    result.andExpect(jsonPath("$.data").isArray());
+    result.andExpect(jsonPath("$.data[0].id").isString());
+    result.andExpect(jsonPath("$.data[0].type").isString());
+    result.andExpect(jsonPath("$.data[0].amount").isNumber());
+    result.andExpect(jsonPath("$.data[0].createdAt").isString());
+    result.andExpect(jsonPath("$.page").value(0));
+    result.andExpect(jsonPath("$.size").value(20));
+    result.andExpect(jsonPath("$.total").isNumber());
   }
 }
